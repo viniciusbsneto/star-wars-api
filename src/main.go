@@ -1,23 +1,31 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
-	uuid "github.com/satori/go.uuid"
+	"github.com/joho/godotenv"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Planet struct
 type Planet struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Climate []string `json:"climate"`
-	Terrain []string `json:"terrain"`
-	Films   int      `json:"films"`
+	ID      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name    string             `json:"name" bson:"name,omitempty"`
+	Climate []string           `json:"climate" bson:"climate,omitempty"`
+	Terrain []string           `json:"terrain" bson:"terrain,omitempty"`
+	Films   int                `json:"films" bson:"films,omitempty"`
 }
 
 // A SWAPIResponse struct to map the entire SWAPI response
@@ -29,8 +37,6 @@ type SWAPIResponse struct {
 type SWAPIFilms struct {
 	Films []string `json:"films"`
 }
-
-var planets []Planet
 
 func getSWAPIPlanet(planetName string) int {
 
@@ -54,82 +60,143 @@ func getSWAPIPlanet(planetName string) int {
 
 func getPlanets(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
+	var planets []Planet
+	collection := client.Database("starwars").Collection("planets")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte(`{ "error": }` + err.Error() + `"}`))
+		return
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var planet Planet
+		cursor.Decode(&planet)
+		planets = append(planets, planet)
+	}
+	if err := cursor.Err(); err != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte(`{ "error": }` + err.Error() + `"}`))
+		return
+	}
 	json.NewEncoder(responseWriter).Encode(planets)
 }
 
 func getPlanetByID(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(request)
-	for _, item := range planets {
-		if item.ID == params["id"] {
-			json.NewEncoder(responseWriter).Encode(item)
-			return
-		}
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	var planet Planet
+	collection := client.Database("starwars").Collection("planets")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&planet)
+	if err != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte(`{ "error": }` + err.Error() + `"}`))
+		return
 	}
-	json.NewEncoder(responseWriter).Encode(&Planet{})
+	json.NewEncoder(responseWriter).Encode(planet)
 }
 
 func getPlanetByName(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	name := request.FormValue("name")
-	for _, item := range planets {
-		if item.Name == name {
-			json.NewEncoder(responseWriter).Encode(item)
-			return
-		}
+	var planet Planet
+	collection := client.Database("starwars").Collection("planets")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err := collection.FindOne(ctx, bson.M{"name": name}).Decode(&planet)
+	if err != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte(`{ "error": }` + err.Error() + `"}`))
+		return
 	}
-	json.NewEncoder(responseWriter).Encode(&Planet{})
+	json.NewEncoder(responseWriter).Encode(planet)
 }
 
 func createPlanet(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	var planet Planet
-	_ = json.NewDecoder(request.Body).Decode(&planet)
-	planet.ID = uuid.NewV4().String()
+	json.NewDecoder(request.Body).Decode(&planet)
 	planet.Films = getSWAPIPlanet(planet.Name)
-	planets = append(planets, planet)
-	json.NewEncoder(responseWriter).Encode(planet)
+	collection := client.Database("starwars").Collection("planets")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	result, _ := collection.InsertOne(ctx, planet)
+	json.NewEncoder(responseWriter).Encode(result)
 }
 
 func updatePlanet(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(request)
-	for index, item := range planets {
-		if item.ID == params["id"] {
-			planets = append(planets[:index], planets[index+1:]...)
-			var planet Planet
-			_ = json.NewDecoder(request.Body).Decode(&planet)
-			planet.ID = params["id"]
-			planets = append(planets, planet)
-			json.NewEncoder(responseWriter).Encode(planet)
-			return
-		}
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	var planet Planet
+	json.NewDecoder(request.Body).Decode(&planet)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	collection := client.Database("starwars").Collection("planets")
+	result, err := collection.ReplaceOne(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{
+			"name":    planet.Name,
+			"climate": planet.Climate,
+			"terrain": planet.Terrain,
+			"films":   planet.Films,
+		},
+	)
+	if err != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte(`{ "error": }` + err.Error() + `"}`))
+		return
 	}
-	json.NewEncoder(responseWriter).Encode(planets)
+	json.NewEncoder(responseWriter).Encode(result)
 }
 
 func deletePlanet(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(request)
-	for index, item := range planets {
-		if item.ID == params["id"] {
-			planets = append(planets[:index], planets[index+1:]...)
-			break
-		}
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	collection := client.Database("starwars").Collection("planets")
+	result, err := collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte(`{ "error": }` + err.Error() + `"}`))
+		return
 	}
-	json.NewEncoder(responseWriter).Encode(planets)
+	json.NewEncoder(responseWriter).Encode(result)
 }
+
+// ConnectDB returns Client and Context to connect to database
+func ConnectDB() (*mongo.Client, context.Context) {
+
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	uri := os.Getenv("MONGODB_URI")
+
+	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+	if err != nil {
+		log.Fatalf("Error creating a new MongoDB client: %v", err)
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatalf("Error connecting to MongoDB: %v", err)
+		panic(err)
+	}
+
+	return client, ctx
+}
+
+var client, ctx = ConnectDB()
 
 func main() {
 
 	router := mux.NewRouter()
-
-	planets = append(planets, Planet{ID: uuid.NewV4().String(), Name: "Tatooine", Climate: []string{"Arid"}, Terrain: []string{"Dessert"}, Films: 5})
-	planets = append(planets, Planet{ID: uuid.NewV4().String(), Name: "Alderaan", Climate: []string{"Temperate"}, Terrain: []string{"Grasslands", "Mountain"}, Films: 2})
-
-	router.HandleFunc("/", func(responseWriter http.ResponseWriter, request *http.Request) {
-		json.NewEncoder(responseWriter).Encode(map[string]string{"message": "Hello World"})
-	}).Methods("GET")
 
 	router.HandleFunc("/planets", getPlanets).Methods("GET")
 	router.HandleFunc("/planets/{id}", getPlanetByID).Methods("GET")
