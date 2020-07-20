@@ -67,6 +67,20 @@ It's a REST API for Star Wars planets.
 
 ---
 
+## Pending (to do)
+1. **Error handling**
+	- I've spent most of the time on learning Go language and how to make a REST API with it.
+	- I've also spent some time on studying MongoDB driver for Go to setup database storage for the API.
+2. **Project structure**
+	- I don't know what project structure I should use with a Go REST API. I have considered MVC or DDD.
+	- But now I'm currently studying a Go Packages structure approach as it is said to be the standard strucutre among Go developers.
+3. **Tests**
+	- I'm currently learning how to write tests in Go. I should be pushing some tests very soon.
+4. **Database container**
+	- The API uses a MongoDB Atlas cluster database (MongoDB Atlas cluster connection URL). I should write a Dockerfile to create a container for MongoDB image so others don't need to use MongoDB Atlas cluster.
+5. **Application image**
+	- Finally I'm considering making an image of the whole application and its dependencies with Docker so it's easier for others to run it.
+
 ## How it works
 
 For now this project is comprised of these files:
