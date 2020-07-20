@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -20,7 +20,37 @@ type Planet struct {
 	Films   int      `json:"films"`
 }
 
+// A SWAPIResponse struct to map the entire SWAPI response
+type SWAPIResponse struct {
+	Results []SWAPIFilms `json:"results"`
+}
+
+// A SWAPIFilms struct to map every film to
+type SWAPIFilms struct {
+	Films []string `json:"films"`
+}
+
 var planets []Planet
+
+func getSWAPIPlanet(planetName string) int {
+
+	response, err := http.Get("https://swapi.dev/api/planets?search=" + planetName)
+
+	if err != nil {
+		log.Fatalf("The HTTP request to SWAPI failed with error: %v", err)
+	}
+
+	responseData, _ := ioutil.ReadAll(response.Body)
+
+	defer response.Body.Close()
+
+	var swapiResponse SWAPIResponse
+	json.Unmarshal(responseData, &swapiResponse)
+
+	films := len(swapiResponse.Results[0].Films)
+
+	return films
+}
 
 func getPlanets(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
@@ -42,7 +72,6 @@ func getPlanetByID(responseWriter http.ResponseWriter, request *http.Request) {
 func getPlanetByName(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	name := request.FormValue("name")
-	fmt.Println(name)
 	for _, item := range planets {
 		if item.Name == name {
 			json.NewEncoder(responseWriter).Encode(item)
@@ -57,6 +86,7 @@ func createPlanet(responseWriter http.ResponseWriter, request *http.Request) {
 	var planet Planet
 	_ = json.NewDecoder(request.Body).Decode(&planet)
 	planet.ID = uuid.NewV4().String()
+	planet.Films = getSWAPIPlanet(planet.Name)
 	planets = append(planets, planet)
 	json.NewEncoder(responseWriter).Encode(planet)
 }
@@ -94,8 +124,8 @@ func main() {
 
 	router := mux.NewRouter()
 
-	planets = append(planets, Planet{ID: "1", Name: "Tatooine", Climate: []string{"Arid"}, Terrain: []string{"Dessert"}, Films: 5})
-	planets = append(planets, Planet{ID: "2", Name: "Alderaan", Climate: []string{"Temperate"}, Terrain: []string{"Grasslands", "Mountain"}, Films: 2})
+	planets = append(planets, Planet{ID: uuid.NewV4().String(), Name: "Tatooine", Climate: []string{"Arid"}, Terrain: []string{"Dessert"}, Films: 5})
+	planets = append(planets, Planet{ID: uuid.NewV4().String(), Name: "Alderaan", Climate: []string{"Temperate"}, Terrain: []string{"Grasslands", "Mountain"}, Films: 2})
 
 	router.HandleFunc("/", func(responseWriter http.ResponseWriter, request *http.Request) {
 		json.NewEncoder(responseWriter).Encode(map[string]string{"message": "Hello World"})
