@@ -33,17 +33,17 @@
 
 
 <h4 align="center"> 
-	 Status: Finished (Refactoring)
+	 Status: Core finished
 </h4>
 
 <p align="center">
  <a href="#about">About</a> •
  <a href="#features">Features</a> •
+ <a href="#pending-to-do">Pending (to do)</a> •
  <a href="#how-it-works">How it works</a> • 
  <a href="#tech-stack">Tech Stack</a> •  
  <a href="#author">Author</a> • 
  <a href="#user-content-license">License</a>
-
 </p>
 
 
