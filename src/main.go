@@ -2,14 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
 	"github.com/gorilla/mux"
+	uuid "github.com/satori/go.uuid"
 )
 
+// Planet struct
 type Planet struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
@@ -25,11 +27,24 @@ func getPlanets(responseWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(responseWriter).Encode(planets)
 }
 
-func getPlanetById(responseWriter http.ResponseWriter, request *http.Request) {
+func getPlanetByID(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(request)
 	for _, item := range planets {
 		if item.ID == params["id"] {
+			json.NewEncoder(responseWriter).Encode(item)
+			return
+		}
+	}
+	json.NewEncoder(responseWriter).Encode(&Planet{})
+}
+
+func getPlanetByName(responseWriter http.ResponseWriter, request *http.Request) {
+	responseWriter.Header().Set("Content-Type", "application/json")
+	name := request.FormValue("name")
+	fmt.Println(name)
+	for _, item := range planets {
+		if item.Name == name {
 			json.NewEncoder(responseWriter).Encode(item)
 			return
 		}
@@ -87,7 +102,8 @@ func main() {
 	}).Methods("GET")
 
 	router.HandleFunc("/planets", getPlanets).Methods("GET")
-	router.HandleFunc("/planets/{id}", getPlanetById).Methods("GET")
+	router.HandleFunc("/planets/{id}", getPlanetByID).Methods("GET")
+	router.HandleFunc("/search", getPlanetByName).Methods("GET")
 	router.HandleFunc("/planets", createPlanet).Methods("POST")
 	router.HandleFunc("/planets/{id}", updatePlanet).Methods("PUT")
 	router.HandleFunc("/planets/{id}", deletePlanet).Methods("DELETE")
