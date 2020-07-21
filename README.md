@@ -5,7 +5,7 @@
 </h1>
 
 <h1 align="center">
-   🛸 <a href="#"> STAR WARS API </a>
+   🚀 <a href="#"> STAR WARS API </a> 🌌
 </h1>
 
 <h3 align="center">
@@ -33,7 +33,7 @@
 
 
 <h4 align="center"> 
-	 Status: Core finished
+	 Status: Core finished 🚧 Refactoring... 🚧
 </h4>
 
 <p align="center">
@@ -47,14 +47,14 @@
 </p>
 
 
-## About
+## :speech_balloon: About
 
 Star Wars API - is a technical challenge proposed by an awesome company for a junior back-end position that I'm applying to.
 It's a REST API for Star Wars planets.
 
 ---
 
-## Features
+## :bulb: Features
 
 - [x] Create a planet
   - [x] Get the number of film appearances of a planet by cosuming an external API
@@ -67,21 +67,21 @@ It's a REST API for Star Wars planets.
 
 ---
 
-## Pending (to do)
-1. **Error handling**
+## :hammer_and_wrench: Pending (to do) :hourglass_flowing_sand:
+1. [ ] **Error handling**
 	- I've spent most of the time on learning Go language and how to make a REST API with it.
 	- I've also spent some time on studying MongoDB driver for Go to setup database storage for the API.
-2. **Project structure**
+2. [ ] **Project structure**
 	- I don't know what project structure I should use with a Go REST API. I have considered MVC or DDD.
 	- But now I'm currently studying a Go Packages structure approach as it is said to be the standard strucutre among Go developers.
-3. **Tests**
+3. [ ] **Tests**
 	- I'm currently learning how to write tests in Go. I should be pushing some tests very soon.
-4. **Database container**
+4. [ ] **Database container**
 	- The API uses a MongoDB Atlas cluster database (MongoDB Atlas cluster connection URL). I should write a Dockerfile to create a container for MongoDB image so others don't need to use MongoDB Atlas cluster.
-5. **Application image**
+5. [ ] **Application image**
 	- Finally I'm considering making an image of the whole application and its dependencies with Docker so it's easier for others to run it.
 
-## How it works
+## ⚙ How it works
 
 For now this project is comprised of these files:
 1. god.mod - For dependencies
@@ -89,7 +89,7 @@ For now this project is comprised of these files:
 3. .env - For environment variables (MongoDB Atlas URI for now)
 4. main.go (src folder) - All API code resides in this file (I plan on refactoring)
 
-### Pre-requisites
+### :pushpin: Pre-requisites
 
 Before you begin, you will need to have the following tools installed on your machine:
 [Git] (https://git-scm.com), [Go] (https://golang.org/).
@@ -175,7 +175,7 @@ GET /search?name={planetName} - Get a planet by Name
 
 ---
 
-## Tech Stack
+## :toolbox: Tech Stack
 
 The following tools were used in the construction of the project:
 
@@ -196,7 +196,7 @@ The following tools were used in the construction of the project:
 
 ---
 
-## How to contribute
+## :handshake: How to contribute
 
 1. Fork the project.
 2. Create a new branch with your changes: `git checkout -b my-feature`
@@ -206,7 +206,7 @@ The following tools were used in the construction of the project:
 
 ---
 
-## Author
+## :technologist: Author
 
  <img style="border-radius: 50%;" src="https://avatars1.githubusercontent.com/u/17788722?v=4" width="100px;" alt="Vinícius Neto"/> 
  <br />
@@ -216,7 +216,7 @@ The following tools were used in the construction of the project:
 
 ---
 
-## License
+## :memo: License
 
 This project is under the license [MIT](./LICENSE).
 
