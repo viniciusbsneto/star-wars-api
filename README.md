@@ -70,14 +70,17 @@ Star Wars API - is a a REST API for Star Wars planets.
 1. [x] **Error handling**
 	- I've spent most of the time on learning Go language and how to make a REST API with it.
 	- I've also spent some time on studying MongoDB driver for Go to setup database storage for the API.
-2. [ ] **Project structure**
+2. [ ] **Case insensitive route params**
+	- I still couldn't find a way to treat route params as case insensitive.
+	- Go MongoDB driver documentation doesn't help much.
+3. [ ] **Project structure**
 	- I don't know what project structure I should use with a Go REST API. I have considered MVC or DDD.
 	- But now I'm currently studying a Go Packages structure approach as it is said to be the standard strucutre among Go developers.
-3. [ ] **Tests**
+4. [ ] **Tests**
 	- I'm currently learning how to write tests in Go. I should be pushing some tests very soon.
-4. [x] **Database container**
+5. [x] **Database container**
 	- The API uses a MongoDB Atlas cluster database (MongoDB Atlas cluster connection URL). I should write a Dockerfile to create a container for MongoDB image so others don't need to use MongoDB Atlas cluster.
-5. [ ] **Application image**
+6. [ ] **Application image**
 	- Finally I'm considering making an image of the whole application and its dependencies with Docker so it's easier for others to run it.
 
 ## ⚙ How it works
@@ -208,7 +211,6 @@ The following tools were used in the construction of the project:
 2. Create a new branch with your changes: `git checkout -b my-feature`
 3. Save your changes and create a commit message telling you what you did: `git commit -m" feature: My new feature "`
 4. Submit your changes: `git push origin my-feature`
-> If you have any questions check this [guide on how to contribute](./CONTRIBUTING.md)
 
 ---
 
