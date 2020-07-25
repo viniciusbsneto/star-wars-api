@@ -49,8 +49,7 @@
 
 ## :speech_balloon: About
 
-Star Wars API - is a technical challenge proposed by an awesome company for a junior back-end position that I'm applying to.
-It's a REST API for Star Wars planets.
+Star Wars API - is a a REST API for Star Wars planets.
 
 ---
 
@@ -67,8 +66,8 @@ It's a REST API for Star Wars planets.
 
 ---
 
-## :hammer_and_wrench: Pending (to do) :hourglass_flowing_sand:
-1. [ ] **Error handling**
+## :hammer_and_wrench: Pending (in progress...) :hourglass_flowing_sand:
+1. [x] **Error handling**
 	- I've spent most of the time on learning Go language and how to make a REST API with it.
 	- I've also spent some time on studying MongoDB driver for Go to setup database storage for the API.
 2. [ ] **Project structure**
@@ -76,7 +75,7 @@ It's a REST API for Star Wars planets.
 	- But now I'm currently studying a Go Packages structure approach as it is said to be the standard strucutre among Go developers.
 3. [ ] **Tests**
 	- I'm currently learning how to write tests in Go. I should be pushing some tests very soon.
-4. [ ] **Database container**
+4. [x] **Database container**
 	- The API uses a MongoDB Atlas cluster database (MongoDB Atlas cluster connection URL). I should write a Dockerfile to create a container for MongoDB image so others don't need to use MongoDB Atlas cluster.
 5. [ ] **Application image**
 	- Finally I'm considering making an image of the whole application and its dependencies with Docker so it's easier for others to run it.
@@ -86,13 +85,17 @@ It's a REST API for Star Wars planets.
 For now this project is comprised of these files:
 1. god.mod - For dependencies
 2. god.sum - For checksums
-3. .env - For environment variables (MongoDB Atlas URI for now)
-4. main.go (src folder) - All API code resides in this file (I plan on refactoring)
+3. .env - For environment variables
+4. docker-compose.yaml - Starts a MongoDB container
+5. Makefile - For running docker-compose more easily
+6. main.go (framework/cmd/server folder) - All core API code resides in this file (I plan on refactoring)
+7. mongo.go (framework/storage) - MongoDB connection configuration code
+8. init.go (framework/storage) - Creates a MongoDB connection whenever storage package is imported (Yes. I know! It needs a more decent abstraction.)
 
 ### :pushpin: Pre-requisites
 
 Before you begin, you will need to have the following tools installed on your machine:
-[Git] (https://git-scm.com), [Go] (https://golang.org/).
+[Git] (https://git-scm.com), [Go] (https://golang.org/), [Docker Desktop] (https://www.docker.com/products/docker-desktop) - if Mac or Windows.
 In addition, it is good to have an editor to work with the code like [VSCode] (https://code.visualstudio.com/)
 
 #### Rodando o Backend (servidor)
@@ -105,13 +108,16 @@ $ git clone git@github.com:viniciusbsneto/star-wars-api.git
 # Access the project folder cmd/terminal
 $ cd star-wars-api
 
-# go to the src folder
-cd src
+# start MongoDB container with docker-compose through Makefile
+make up
 
-# run the application
+# go to server folder
+cd framework/cmd/server
+
+# run the server
 $ go run main.go
 
-# The server will start at port: 3333 - go to http://localhost:3333
+# The server will start at host and port informed by you in .env file - e.g: go to http://localhost:3333
 
 ```
 
